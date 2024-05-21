@@ -60,6 +60,7 @@ public class WebSecurityConfig {
                         authorizeRequests
                                 .requestMatchers("/api/user/**").authenticated() // Yêu cầu xác thực cho /api/v1/**
                                 .requestMatchers("/api/private/**").authenticated()
+                                .requestMatchers("/api/auth/logout").authenticated()
                                 .anyRequest().permitAll() // Mở quyền truy cập cho tất cả các yêu cầu khác
                 )
                 .sessionManagement(sessionManagement ->

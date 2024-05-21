@@ -9,8 +9,10 @@ import com.example.demo_di_ioc.models.response.MessageResponse;
 import com.example.demo_di_ioc.respositories.RoleRepository;
 import com.example.demo_di_ioc.respositories.UserRepository;
 import com.example.demo_di_ioc.security.jwt.JwtUtils;
+import com.example.demo_di_ioc.security.service.TokenBlacklistService;
 import com.example.demo_di_ioc.security.service.UserDetailsImpl;
 import com.example.demo_di_ioc.statics.ERole;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -45,6 +47,9 @@ public class AuthController {
 
     @Autowired
     JwtUtils jwtUtils;
+
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -123,6 +128,17 @@ public class AuthController {
         userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
+    @PostMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            tokenBlacklistService.invalidateToken(token);
+            return "Logged out successfully";
+        } else {
+            return "Invalid token";
+        }
     }
 
 }

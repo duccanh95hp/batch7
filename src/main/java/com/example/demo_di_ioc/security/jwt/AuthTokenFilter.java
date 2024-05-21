@@ -1,5 +1,6 @@
 package com.example.demo_di_ioc.security.jwt;
 
+import com.example.demo_di_ioc.security.service.TokenBlacklistService;
 import com.example.demo_di_ioc.security.service.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,6 +25,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
 
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
@@ -31,16 +34,22 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
+            final String authorizationHeader = request.getHeader("Authorization");
+
             String jwt = parseJwt(request);
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-                String username = jwtUtils.getUserNameFromJwtToken(jwt);
+                if (!tokenBlacklistService.isTokenInvalid(jwt)) {
+                    String username = jwtUtils.getUserNameFromJwtToken(jwt);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    logger.warn("Token is invalid (logged out)");
+                }
             }
         } catch (Exception e) {
             logger.error("Cannot set user authentication: {}", e);

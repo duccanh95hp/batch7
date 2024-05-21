@@ -17,6 +17,4 @@ public class Request {
     @NotEmpty(message = "nam not null")// null hoặc empty
     private String name;
     private int score;
-
-
 }
