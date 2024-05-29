@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: demo_di_ioc
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: Ov23liHH33NmYgho7GDX
+            client-secret: edd07f479add4dc73cadef5f52540d101ee1436d
+            # scope: email, public_profile
+          google:
+            client-id: 1041144058068-tqvumud6muicgbnig74lvk1nq3mdn0du.apps.googleusercontent.com
+            client-secret: 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
+          facebook:
+            client-id: 3704525286533825
+            client-secret: 7c67494427c522ae81038485b3e26cbe
+
+logging:
+  level:
+    org.springframework.security: TRACE
+
+bezkoder:
+  openapi:
+    dev-url: http://localhost:8080
+
+application:
+  jwtExpirationMs: 86400000
